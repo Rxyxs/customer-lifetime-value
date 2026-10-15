@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Lifetime Value</title>
+<meta name="description" content="BG/NBD and Gamma-Gamma customer lifetime value on two years of real retail transactions, tested against what customers did next.">
+<style>
+  :root {
+    --bg: #FBFAF8; --surface: #FFFFFF; --ink: #23201D; --muted: #6B645D;
+    --line: #E3DED7; --accent: #2F6DB5; --good: #4C7A3E;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151719; --surface: #1D2023; --ink: #E9EBED; --muted: #A2A8AE;
+      --line: #2E3236; --accent: #6FA3E0; --good: #7FAE6B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151719; --surface: #1D2023; --ink: #E9EBED; --muted: #A2A8AE;
+    --line: #2E3236; --accent: #6FA3E0; --good: #7FAE6B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px 96px; }
+  header { padding: 72px 0 40px; border-bottom: 1px solid var(--line); margin-bottom: 44px; }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.7rem); line-height: 1.15; margin: 0 0 18px; letter-spacing: -0.02em; }
+  .lede { font-size: clamp(1.02rem, 2.4vw, 1.17rem); color: var(--muted); margin: 0 0 24px; max-width: 64ch; }
+  .lede strong { color: var(--ink); }
+  .links a {
+    display: inline-block; margin: 0 10px 10px 0; padding: 9px 15px;
+    border: 1px solid var(--line); border-radius: 7px; text-decoration: none;
+    color: var(--ink); background: var(--surface); font-size: 0.9rem; transition: border-color .15s;
+  }
+  .links a:hover { border-color: var(--accent); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 28px 0 0; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 14px 16px; }
+  .stat b { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .stat span { color: var(--muted); font-size: 0.85rem; }
+  h2 { font-size: 1.42rem; margin: 56px 0 8px; letter-spacing: -0.01em; padding-top: 10px; border-top: 1px solid var(--line); }
+  h2 .num { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 8px; }
+  p, li { max-width: 72ch; }
+  p { margin: 0 0 16px; }
+  figure { margin: 26px 0; }
+  figure img { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+  figcaption { font-size: 0.85rem; color: var(--muted); margin-top: 9px; max-width: 72ch; }
+  .tablewrap { overflow-x: auto; margin: 22px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 460px; }
+  th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .04em; }
+  .win td { color: var(--good); font-weight: 600; }
+  code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; font-size: 0.88em; }
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Predicting the next six months of every customer</h1>
+  <p class="lede">Two years of real transactions from a UK online wholesaler, 5,878 customers, the top 10% bringing 64% of revenue. Classic buy-till-you-die models, implemented from their likelihoods, predict each customer&#39;s next 26 weeks and are checked against <strong>what each customer actually did</strong>.</p>
+  <div class="links">
+    <a href="https://github.com/Rxyxs/customer-lifetime-value">Code on GitHub</a>
+    <a href="https://www.kaggle.com/datasets/mashlyn/online-retail-ii-uci">Dataset on Kaggle</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>-2%</b><span>error on total purchases, BG/NBD (naive: +68%)</span></div>
+    <div class="stat"><b>64%</b><span>of next-6-month revenue from the top 10% ranked</span></div>
+    <div class="stat"><b>151% &rarr; 24%</b><span>ML baseline error once features stopped growing with tenure</span></div>
+    <div class="stat"><b>26%</b><span>of one-time buyers return, though the model calls them alive</span></div>
+  </div>
+</header>
+
+<h2><span class="num">01</span>Three numbers per customer are enough</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>Model</th><th>Total purchases error</th><th>MAE</th><th>Spearman</th><th>Revenue, top 10%</th></tr></thead>
+  <tbody>
+    <tr><td>Naive past rate</td><td>+68%</td><td>1.67</td><td>0.56</td><td>60%</td></tr>
+    <tr><td>LightGBM, fixed-window RFM</td><td>+24%</td><td>1.26</td><td>0.53</td><td>62%</td></tr>
+    <tr class="win"><td>BG/NBD x Gamma-Gamma</td><td>-2%</td><td>1.04</td><td>0.62</td><td>64%</td></tr>
+  </tbody>
+</table></div>
+<figure>
+  <img src="img/conditional.png" alt="Mean purchases in the holdout by calibration frequency: BG/NBD tracks the actual line closely at every level, LightGBM overshoots for low-frequency customers, the naive rate overshoots everywhere.">
+  <figcaption>Holdout June-December 2011. BG/NBD sees only frequency, recency and tenure, and follows actual behaviour at every frequency level.</figcaption>
+</figure>
+<p>The machine-learning baseline first overshot by 151%: trained when the data was six months old and applied when it was eighteen, its lifetime-total features were far outside anything it had seen. Fixed 13- and 26-week windows fixed that. Revenue is still underestimated by 13% because the holdout contains Christmas and the models are stationary.</p>
+
+<h2><span class="num">02</span>Ranking customers by value</h2>
+<figure>
+  <img src="img/capture.png" alt="Cumulative share of next-26-week revenue against share of customers ranked by predicted value; both models sit close below the perfect-foresight curve.">
+  <figcaption>For targeting, the order matters more than the totals.</figcaption>
+</figure>
+
+<h2><span class="num">03</span>Where the model is wrong</h2>
+<figure>
+  <img src="img/p_alive.png" alt="Bar chart of the share of customers buying again by P(alive) band; it rises from 19% to 56% and then drops to 53% in the top band.">
+  <figcaption>In BG/NBD a customer can only drop out after a repeat purchase, so one-time buyers sit in the top band by construction. Only 26% of them returned, against 85% of repeat buyers in the same band.</figcaption>
+</figure>
+<figure>
+  <img src="img/cohorts.png" alt="Heatmap of monthly cohort retention; cohorts from September to December 2010 are visibly lighter than the rest.">
+  <figcaption>Cohorts acquired September-December 2010 came back at half the rate of others in months 2-6 (10.7% vs 21.2%), but those months are the January-May low season, so one year of data cannot separate customer quality from the calendar.</figcaption>
+</figure>
+
+<footer>
+  Pablo Reyes · Data: Online Retail II (Daqing Chen, UCI), via Kaggle (CC0), not redistributed. Code under MIT.
+</footer>
+</div>
+</body>
+</html>
