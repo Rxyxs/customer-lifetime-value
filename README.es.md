@@ -1,4 +1,4 @@
-[English](README.md) | **Español**
+[[English](README.md) ] | [Español ]
 
 # Valor de vida del cliente: predecir los próximos seis meses de cada cliente
 
